@@ -6,6 +6,7 @@ import art.infra.config.ConfigLoader;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.regex.Matcher;
 
 
 public class LinksService {
@@ -36,8 +37,8 @@ public class LinksService {
     }
     public boolean isValid(String str) {
         if (str.length() == 0) return false;
-        String regex = "[0-9]";
-        return false;
+        String regex = "^(http|https)://.*\\.[a-z]{2,6}/.*";
+        return str.matches(regex);
     }
     public boolean isExpired(Link link) {
         return link.getSurvivalTime().isBefore(LocalDateTime.now());
