@@ -6,9 +6,9 @@ import java.util.Map;
 
 public interface UserRepository {
     void save(User user);
-    User findByUsername(String username);
-    User findById(int id);
-    void delete(String username);
+    void saveAll(Map<String,User> users);
+    User findById(String id);
+    void delete(String uuid);
     void update(User user);
     void deleteAll();
     Map<String,User> findAll();

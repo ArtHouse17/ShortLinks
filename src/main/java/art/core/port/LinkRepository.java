@@ -9,6 +9,7 @@ import java.util.Map;
 public interface LinkRepository {
 
     void save(Link link);
+    void saveAll(Map<Long,Link> links);
     Link findById(Long id);
     void delete(Long id);
     void update(Link link);

@@ -1,12 +1,12 @@
 package art.core.service;
 
-import art.core.model.User;
+import art.core.model.Link;
+import art.infra.config.AppConfig;
+import art.infra.config.ConfigLoader;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
+import java.time.Duration;
+import java.time.LocalDateTime;
+
 
 public class LinksService {
     private static final String CHARSET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -33,5 +33,28 @@ public class LinksService {
         }
 
         return result;
+    }
+    public boolean isValid(String str) {
+        if (str.length() == 0) return false;
+        String regex = "[0-9]";
+        return false;
+    }
+    public boolean isExpired(Link link) {
+        return link.getSurvivalTime().isBefore(LocalDateTime.now());
+    }
+
+    public boolean isReachedLimit(Link link) {
+        return link.getForwaredTimes() > link.getForwardLimit();
+    }
+    public boolean canCreateLink(LocalDateTime linkTime, long limit) {
+        AppConfig appConfig = ConfigLoader.load();
+        AppConfig.TimeLimit timeLimit = appConfig.getTimeLimit();
+        LocalDateTime nowPlusLimit = LocalDateTime.now().plusYears(timeLimit.getYear())
+                .plusMonths(timeLimit.getMonth())
+                .plusDays(timeLimit.getDay())
+                .plusHours(timeLimit.getHour())
+                .plusMinutes(timeLimit.getMinute())
+                .plusSeconds(timeLimit.getSecond());
+        return appConfig.getForwardLimit() >= limit && nowPlusLimit.isAfter(linkTime) && linkTime.isAfter(LocalDateTime.now()) ;
     }
 }

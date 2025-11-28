@@ -14,17 +14,18 @@ public class MemoryUserRepository implements UserRepository {
     }
     @Override
     public void save(User user) {
-        users.put(user.getName(), user);
+        users.put(user.getUuid(), user);
     }
 
     @Override
-    public User findByUsername(String username) {
-        return users.get(username);
+    public void saveAll(Map<String, User> newusers) {
+        users.putAll(newusers);
     }
 
+
     @Override
-    public User findById(int id) {
-        return users.values().stream().filter(u -> u.getUuid() == id).findFirst().orElse(null);
+    public User findById(String id) {
+        return users.get(id);
     }
 
     @Override
@@ -34,7 +35,7 @@ public class MemoryUserRepository implements UserRepository {
 
     @Override
     public void update(User user) {
-        users.put(user.getName(), user);
+        users.put(user.getUuid(), user);
     }
 
     @Override

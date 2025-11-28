@@ -21,6 +21,11 @@ public class MemoryLinkRepository implements LinkRepository {
     }
 
     @Override
+    public void saveAll(Map<Long, Link> newlinks) {
+        links.putAll(newlinks);
+    }
+
+    @Override
     public Link findById(Long id) {
         return links.get(id);
     }
@@ -47,9 +52,7 @@ public class MemoryLinkRepository implements LinkRepository {
 
     @Override
     public boolean exists(Long linkId) {
-        if (links.containsKey(linkId))
-            return true;
-        return false;
+        return links.containsKey(linkId);
     }
 
     @Override
