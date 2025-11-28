@@ -164,7 +164,7 @@ public class HandleService {
             }
             System.out.println("Введите ссылку");
             String link = scanner.nextLine().trim();
-            if (!linkRepository.existByUserandUrl(currentUser, link)) {
+            if (!linkRepository.existByUserandUrl(currentUser, link) && linksService.isValid(link)) {
                 System.out.println("Напишите количество переходов, не превышающее" + ConfigLoader.load().getForwardLimit());
                 String timesToLink = scanner.nextLine().trim();
                 System.out.println("Введите время жизни ссылки не превышающее" );
