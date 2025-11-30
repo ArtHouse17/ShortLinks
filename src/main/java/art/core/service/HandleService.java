@@ -136,12 +136,12 @@ public class HandleService {
         String link = scanner.nextLine().trim();
         try {
             Link currentLink = linkRepository.findById(LinksService.decode(link.replace(InetAddress.getLocalHost().getHostAddress() + "/", "")));
-            if (linksService.isExpired(currentLink)) {
+            if (LinksService.isExpired(currentLink)) {
                 System.out.println("Время ссылки окончено!");
                 linkRepository.delete(currentLink.getId());
                 return;
             }
-            if (linksService.isReachedLimit(currentLink)) {
+            if (LinksService.isReachedLimit(currentLink)) {
                 System.out.println("Количество переходов превышено");
                 linkRepository.delete(currentLink.getId());
                 return;
@@ -164,20 +164,22 @@ public class HandleService {
             }
             System.out.println("Введите ссылку");
             String link = scanner.nextLine().trim();
-            if (!linkRepository.existByUserandUrl(currentUser, link) && linksService.isValid(link)) {
+            if (!linkRepository.existByUserandUrl(currentUser, link) && LinksService.isValid(link)) {
                 System.out.println("Напишите количество переходов, не превышающее" + ConfigLoader.load().getForwardLimit());
                 String timesToLink = scanner.nextLine().trim();
                 System.out.println("Введите время жизни ссылки не превышающее" );
                 LocalDateTime forwardedTime = LocalDateTime.parse(scanner.nextLine().trim(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-                if (!linksService.canCreateLink(forwardedTime, Long.parseLong(timesToLink))) {
+                if (!LinksService.canCreateLink(forwardedTime, Long.parseLong(timesToLink))) {
                     throw new CannotAllowToCreateLink("Пользователь превысил лимит");
                 }
                 System.out.println("Текущий пользователь " + currentUser);
                 Link newShortLink = new Link(link, currentUser, timesToLink, forwardedTime);
                 linkRepository.save(newShortLink);
                 System.out.println("Ссылка создана" + InetAddress.getLocalHost().getHostAddress()+ LinksService.encode(newShortLink.getId()));
-            } else {
-                System.out.println("Link already exists");
+            } else if (LinksService.isValid(link)){
+                System.out.println("Ссылка уже существует");
+            }else {
+                System.out.println("Ссылка неподходящего формата");
             }
         }catch (CannotAllowToCreateLink e) {
             System.out.println("Вы ввели значение больше лимита!");

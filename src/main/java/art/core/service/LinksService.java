@@ -3,6 +3,7 @@ package art.core.service;
 import art.core.model.Link;
 import art.infra.config.AppConfig;
 import art.infra.config.ConfigLoader;
+import lombok.NonNull;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -35,19 +36,39 @@ public class LinksService {
 
         return result;
     }
-    public boolean isValid(String str) {
+
+    /**
+     * @param str ссылка на сайт, формат которой проверяется
+     * @return возвращает true если ссылка удовлетворяет формату, иначе - false
+     */
+    public static boolean isValid(String str) {
         if (str.length() == 0) return false;
-        String regex = "^(http|https)://.*\\.[a-z]{2,6}/.*";
+        String regex = "^(http|https)://.*\\.[a-z]{2,6}(/.*)?";
         return str.matches(regex);
     }
-    public boolean isExpired(Link link) {
+
+    /**
+     * @param link ссылка которую мы проверяем
+     * @return возвращает true если ссылка истекла по времени, false если ссылка ещё действительна
+     */
+    public static boolean isExpired(Link link) {
         return link.getSurvivalTime().isBefore(LocalDateTime.now());
     }
 
-    public boolean isReachedLimit(Link link) {
+    /**
+     * @param link ссылка которую мы проверяем
+     * @return возвращает true если лимит переходов ссылки был исчерпан, false если лимит ещё не исчерпан.
+     */
+    public static boolean isReachedLimit(@NonNull Link link) {
         return link.getForwaredTimes() > link.getForwardLimit();
     }
-    public boolean canCreateLink(LocalDateTime linkTime, long limit) {
+
+    /**
+     * @param linkTime параметр времени для проверки. Вводится время которое мы сравниваем с лимитом.
+     * @param limit параметр лимита переходов. Вводится количество которое мы сравниваем с лимитом.
+     * @return возвращает true если введеные параметры удовлетворяют конфигурациям и введеное время позже настоящего времени, иначе - false.
+     */
+    public static boolean canCreateLink(LocalDateTime linkTime, long limit) {
         AppConfig appConfig = ConfigLoader.load();
         AppConfig.TimeLimit timeLimit = appConfig.getTimeLimit();
         LocalDateTime nowPlusLimit = LocalDateTime.now().plusYears(timeLimit.getYear())
