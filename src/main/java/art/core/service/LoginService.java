@@ -19,12 +19,12 @@ public class LoginService {
     public boolean login(Scanner scanner) {
         if (getCurrentUser() != null)
             return true;
-        System.out.println("Введите UUID");
+        System.out.println("Введите UUID!");
         String uuid = scanner.nextLine().trim();
-        if (getUserRepository().exists(uuid)){
+        if (getUserRepository().exists(uuid)) {
             User user = getUserRepository().findById(uuid);
             currentUser = user;
-        }else{
+        } else {
             System.out.println("Такого пользователя не существует!");
         }
         return currentUser != null;

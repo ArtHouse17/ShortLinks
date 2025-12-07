@@ -1,5 +1,6 @@
 package art.infra.config;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

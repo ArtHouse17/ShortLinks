@@ -27,7 +27,7 @@ public class StartupService {
 
     public void start() {
         System.out.println("Добро пожаловать в приложение генерации коротких ссылок!");
-        while (true){
+        while (true) {
             handleService.handleMainMenu();
         }
     }

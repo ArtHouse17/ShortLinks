@@ -63,28 +63,29 @@
   </dependencies>
   <build>
     <plugins>
-      <!-- Пока в комментарии чтобы не мешал билдится на гитхабе.
       <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-checkstyle-plugin</artifactId>
-          <version>3.1.0</version>
-          <executions>
-              <execution>
-                  <goals>
-                      <goal>
-                          check
-                      </goal>
-                  </goals>
-              </execution>
-          </executions>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>
+                check
+              </goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <configLocation>checkstyle.xml</configLocation>
+        </configuration>
       </plugin>
-      -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
         <version>3.3.0</version>
         <configuration>
-          <mainClass>art.FinanceControl</mainClass>
+          <mainClass>art.App</mainClass>
         </configuration>
       </plugin>
       <plugin>

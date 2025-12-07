@@ -16,6 +16,7 @@ import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Scanner;
 
 public class HandleService {
@@ -37,7 +38,7 @@ public class HandleService {
     public void handleMainMenu() {
         FileService.load(file);
         ShowcaseCLI.showMainMenu();
-        switch(scanner.nextLine().trim()){
+        switch (scanner.nextLine().trim()) {
             case "1":
                 handleGenerateLink();
                 break;
@@ -48,7 +49,7 @@ public class HandleService {
                 loginService.unlogin();
                 break;
             case "4":
-                HandleChangingURLs();
+                handleChangingURLs();
                 break;
             case "5":
                 loginService.login(scanner);
@@ -60,11 +61,10 @@ public class HandleService {
         }
     }
 
-    private void HandleChangingURLs() {
-        if (loginService.login(scanner)){
-            System.out.println("Выберите ссылку что вы хотите заменить");
-            ShowcaseCLI.showLinksForUpdateMenu(loginService.getCurrentUser());
-            switch(scanner.nextLine().trim()){
+    private void handleChangingURLs() {
+        if (loginService.login(scanner)) {
+            ShowcaseCLI.showLinksForChangingMenu(loginService.getCurrentUser());
+            switch (scanner.nextLine().trim()) {
                 case "1":
                     handleUpdateURL();
                     break;
@@ -72,13 +72,16 @@ public class HandleService {
                     handleRemovalURL();
                     break;
             }
-        }else{
+        } else {
             System.out.println("Авторизуйтесь для работы в этом разделе!");
         }
     }
 
     private void handleUpdateURL() {
-        System.out.println("Введите короткую ссылку для изменения!");
+        System.out.println("╔══════════════════════════════╗");
+        System.out.println("║ Введите короткую ссылку      ║");
+        System.out.println("║ для изменения!               ║");
+        System.out.println("╚══════════════════════════════╝");
         String linkId = scanner.nextLine().trim();
         handleUpdateURLMenu(linkId);
     }
@@ -89,13 +92,14 @@ public class HandleService {
         if (link == null)
             return;
         System.out.println("Выберите дальнейшее действие:");
+        ShowcaseCLI.showLinksForUpdateMenu();
         String param = scanner.nextLine().trim();
-        switch(param){
+        switch (param) {
             case "1":
                 String newForwardLimit = scanner.nextLine().trim();
                 if (linksService.canCreateLink(LocalDateTime.now(), Long.parseLong(newForwardLimit))) {
                     link.setForwardLimit(Long.parseLong(newForwardLimit));
-                }else{
+                } else {
                     System.out.println("Вы ввели значение превышающее лимит!");
                 }
                 break;
@@ -104,7 +108,7 @@ public class HandleService {
                 LocalDateTime newSurvivalLimit = LocalDateTime.parse(newSurvivalLimitString, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
                 if (linksService.canCreateLink(newSurvivalLimit, -1)) {
                     link.setSurvivalTime(newSurvivalLimit);
-                }else{
+                } else {
                     System.out.println("Вы ввели значение превышающее лимит!");
                 }
                 break;
@@ -112,7 +116,10 @@ public class HandleService {
     }
 
     private void handleRemovalURL() {
-        System.out.println("Введите короткую ссылку для удаления!!");
+        System.out.println("╔══════════════════════════════╗");
+        System.out.println("║ Введите короткую ссылку      ║");
+        System.out.println("║ для удаления!                ║");
+        System.out.println("╚══════════════════════════════╝");
         String linkId = scanner.nextLine().trim();
         handleRemovalMenuURL(linkId);
     }
@@ -122,10 +129,10 @@ public class HandleService {
         Link link = linkRepository.findById(decodedLinkId);
         if (link == null)
             return;
-        System.out.println("Вы уверены что вы хотите удалить ссылку?");
-        switch(scanner.nextLine().trim().toLowerCase()){
+        ShowcaseCLI.showLinksForDeleteMenu();
+        switch (scanner.nextLine().trim().toLowerCase()) {
             case "y":
-                linkRepository.delete(Long.parseLong(linkId));
+                linkRepository.delete(decodedLinkId);
                 break;
             case "n":
                 break;
@@ -136,6 +143,7 @@ public class HandleService {
         String link = scanner.nextLine().trim();
         try {
             Link currentLink = linkRepository.findById(LinksService.decode(link.replace(InetAddress.getLocalHost().getHostAddress() + "/", "")));
+            currentLink.setForwaredTimes(currentLink.getForwaredTimes() + 1);
             if (LinksService.isExpired(currentLink)) {
                 System.out.println("Время ссылки окончено!");
                 linkRepository.delete(currentLink.getId());
@@ -147,10 +155,9 @@ public class HandleService {
                 return;
             }
             Desktop.getDesktop().browse(new URI(currentLink.getUrl()));
-            currentLink.setForwaredTimes(currentLink.getForwaredTimes()+1);
         } catch (IOException | URISyntaxException e) {
             throw new RuntimeException(e);
-        } catch (NullPointerException e){
+        } catch (NullPointerException e) {
             System.out.println("Вы ввели неверную ссылку!");
         }
 
@@ -165,26 +172,27 @@ public class HandleService {
             System.out.println("Введите ссылку");
             String link = scanner.nextLine().trim();
             if (!linkRepository.existByUserandUrl(currentUser, link) && LinksService.isValid(link)) {
-                System.out.println("Напишите количество переходов, не превышающее" + ConfigLoader.load().getForwardLimit());
+                System.out.println("Напишите количество переходов, не превышающее " + ConfigLoader.load().getForwardLimit());
                 String timesToLink = scanner.nextLine().trim();
-                System.out.println("Введите время жизни ссылки не превышающее" );
+                System.out.println("Введите время жизни ссылки не превышающее " + LinksService.timeLimitToString() );
                 LocalDateTime forwardedTime = LocalDateTime.parse(scanner.nextLine().trim(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
                 if (!LinksService.canCreateLink(forwardedTime, Long.parseLong(timesToLink))) {
                     throw new CannotAllowToCreateLink("Пользователь превысил лимит");
                 }
-                System.out.println("Текущий пользователь " + currentUser);
                 Link newShortLink = new Link(link, currentUser, timesToLink, forwardedTime);
                 linkRepository.save(newShortLink);
-                System.out.println("Ссылка создана" + InetAddress.getLocalHost().getHostAddress()+ LinksService.encode(newShortLink.getId()));
-            } else if (LinksService.isValid(link)){
+                System.out.println("Ссылка создана " + InetAddress.getLocalHost().getHostAddress() + "/" + LinksService.encode(newShortLink.getId()));
+            } else if (LinksService.isValid(link)) {
                 System.out.println("Ссылка уже существует");
-            }else {
+            } else {
                 System.out.println("Ссылка неподходящего формата");
             }
-        }catch (CannotAllowToCreateLink e) {
+        } catch (CannotAllowToCreateLink e) {
             System.out.println("Вы ввели значение больше лимита!");
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
+        } catch (DateTimeParseException e) {
+            System.out.println("Вы ввели неподъодящий формат времени.");
         }
     }
 }

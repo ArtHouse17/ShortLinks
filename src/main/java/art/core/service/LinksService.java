@@ -7,6 +7,7 @@ import lombok.NonNull;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.regex.Matcher;
 
 
@@ -78,5 +79,18 @@ public class LinksService {
                 .plusMinutes(timeLimit.getMinute())
                 .plusSeconds(timeLimit.getSecond());
         return appConfig.getForwardLimit() >= limit && nowPlusLimit.isAfter(linkTime) && linkTime.isAfter(LocalDateTime.now()) ;
+    }
+
+    public static String timeLimitToString() {
+        AppConfig appConfig = ConfigLoader.load();
+        AppConfig.TimeLimit timeLimit = appConfig.getTimeLimit();
+        LocalDateTime nowPlusLimit = LocalDateTime.now().plusYears(timeLimit.getYear())
+                .plusMonths(timeLimit.getMonth())
+                .plusDays(timeLimit.getDay())
+                .plusHours(timeLimit.getHour())
+                .plusMinutes(timeLimit.getMinute())
+                .plusSeconds(timeLimit.getSecond());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        return nowPlusLimit.format(formatter);
     }
 }

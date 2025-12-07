@@ -1,4 +1,4 @@
-name: Short Links
+name: Finance Control
 
 on:
   push:
@@ -18,7 +18,7 @@ jobs:
       - name: Setup JDK
         uses: actions/setup-java@v1
         with:
-          java-version: 11
+          java-version: 17
 
       - name: Cache Maven dependencies
         uses: actions/cache@v4
@@ -29,10 +29,21 @@ jobs:
             ${{ runner.os }}-maven-
 
       - name: Build w/ Maven
-        run: mvn clean install -X
-
-      #- name: Run Checkstyle
-      #  run: mvn checkstyle:check
-
+        run: mvn clean install
       - name: Run test
         run: mvn test
+
+  deploy:
+    runs-on: self-hosted
+    needs: build
+    steps:
+      - name: Checkouts
+        uses: actions/checkout@v2
+      - name: Build Docker Image
+        run: docker build -t demidov_app:1.0 .
+      - name: Run Docker Image
+        run: |
+          docker run -t --name demidovapp demidov_app:1.0 | echo "3" 
+          echo "3"
+          docker logs demidovapp
+          docker ps -a

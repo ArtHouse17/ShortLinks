@@ -16,11 +16,11 @@ public class FileService {
         this.linkRepository = linkRepository;
         this.userRepository = userRepository;
     }
-    public static void save(File file, Map<Long, Link> links){
-        try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
-            if(!file.exists()){
+    public static void save(File file, Map<Long, Link> links) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
+            if (!file.exists()) {
                 file.createNewFile();
-            }else{
+            } else {
                 file.delete();
                 file.createNewFile();
             }
@@ -31,8 +31,8 @@ public class FileService {
             throw new RuntimeException(e);
         }
     }
-    public static void load(File file){
-        try(ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+    public static void load(File file) {
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
             Map<Long,Link> links = (Map<Long,Link>) ois.readObject();
             linkRepository.saveAll(links);
             userRepository.saveAll(links.values().stream().map(Link::getUser).collect(Collectors.toMap(User::getUuid, u -> u)));
